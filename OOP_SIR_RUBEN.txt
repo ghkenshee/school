@@ -1,0 +1,143 @@
+
+import java.util.Scanner;
+import java.util.ArrayList;
+
+class CartItem {
+    private Product product;
+    private int quantity;
+    
+    public CartItem(Product product, int quantity) {
+        this.product = product;
+        this.quantity = quantity;
+    }
+    
+    public double getSubtotal() {
+        return product.getPrice() * quantity;
+    }
+    
+    public double getPrice() {
+        return product.getPrice();
+    }
+    
+    public int getQuantity() {
+        return quantity;
+    }
+    
+    public String getProductName() {
+        return product.getProductName();
+    }
+}
+
+class Transaction {
+    private ArrayList<CartItem> items = new ArrayList<>();
+    private double amountTendered;
+    
+    public void addProduct(Product product, int quantity) {
+        items.add(new CartItem(product, quantity));
+    }
+    
+    public double total() {
+        double total = 0;
+        for (CartItem item : items) {
+            total += item.getSubtotal();
+        }
+        return total;
+    }
+    
+    public double valueAddedTax() {
+        return total() * 0.12;
+    }
+    
+    public double amountChange() {
+        return amountTendered - (total() + valueAddedTax());
+    }
+    
+    public void setAmountTendered(double amountTendered) {
+        this.amountTendered = amountTendered;
+    }
+    
+    void displayReceipt() {
+        System.out.println("=== Receipt ===");
+        System.out.printf("%-12s %-8s %-10s %-10s\n", "Product", "Qty", "Price", "Subtotal");
+        for (CartItem item : items) {
+            System.out.printf("%-12s %-8d %-10.2f %-10.2f\n",
+                item.getProductName(),
+                item.getQuantity(),
+                item.getPrice(),
+                item.getSubtotal()
+            );
+        }
+    
+        System.out.println("--------------------------------------");
+        double grandTotal = total() + valueAddedTax();
+        System.out.printf("%-20s %-10.2f\n", "Total:", total());
+        System.out.printf("%-20s %-10.2f\n", "VAT (12%):", valueAddedTax());
+        System.out.printf("%-20s %-10.2f\n", "Grand Total:", grandTotal);
+        System.out.printf("%-20s %-10.2f\n", "Amount Tendered:", amountTendered);
+    
+        if (amountTendered < grandTotal) {
+            System.out.println("Payment is insufficient. Please add more money.");
+        } else {
+            System.out.printf("%-20s %-10.2f\n", "Change:", amountChange());
+        }
+    }
+}
+
+class Product {
+    private String productName;
+    private double price;
+    private String productType; // add this
+
+    public Product(String productName, double price, String productType) {
+        this.productName = productName;
+        this.price = price;
+        this.productType = productType;
+    }
+
+    public String getProductName() { return productName; }
+    public double getPrice() { return price; }
+    public String getProductType() { return productType; }
+}
+
+class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        
+        System.out.println("== WELCOME TO INTERNATIONAL RESTAURANT ==");
+
+        Product hummus = new Product("Hummus", 300, "Arabic");
+        Product sisig = new Product("Sisig", 100, "Filipino");
+        Product ramen = new Product("Ramen", 200, "Japanese");
+
+        Transaction transaction = new Transaction();
+        Product[] catalog = {hummus, sisig, ramen};
+
+        // Show catalog
+        for (int i = 0; i < catalog.length; i++) {
+            System.out.println((i + 1) + ". " + catalog[i].getProductName() +
+                               " - " + catalog[i].getPrice() +
+                               " - " + catalog[i].getProductType());
+        }
+        
+        System.out.println("=========================================");
+
+        System.out.print("\nEnter product number: ");
+        int choice = scanner.nextInt();
+
+        System.out.print("Enter quantity: ");
+        int quantity = scanner.nextInt();
+
+        Product selectedProduct = catalog[choice - 1];
+        transaction.addProduct(selectedProduct, quantity);
+
+        // Ask for payment
+        System.out.print("Enter amount tendered: ");
+        double tendered = scanner.nextDouble();
+        transaction.setAmountTendered(tendered);
+
+        // Show receipt
+        transaction.displayReceipt();
+        
+        scanner.close();
+    }
+}
